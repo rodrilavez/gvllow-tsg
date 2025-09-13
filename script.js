@@ -117,15 +117,19 @@ newsletterForm.addEventListener('submit', (e) => {
 // Video thumbnail click handlers
 videoThumbnails.forEach(thumbnail => {
     thumbnail.addEventListener('click', () => {
-        // Simulate video play (you can replace this with actual video functionality)
-        const playButton = thumbnail.querySelector('.play-button');
-        playButton.style.transform = 'translate(-50%, -50%) scale(0.8)';
-        
-        setTimeout(() => {
-            playButton.style.transform = 'translate(-50%, -50%) scale(1)';
-            // Here you would typically open a video modal or redirect to video
-            alert('Video functionality would be implemented here');
-        }, 200);
+        const videoUrl = thumbnail.getAttribute('data-video-url');
+        if (videoUrl) {
+            window.open(videoUrl, '_blank');
+        } else {
+            // Fallback for videos without URL
+            const playButton = thumbnail.querySelector('.play-button');
+            playButton.style.transform = 'translate(-50%, -50%) scale(0.8)';
+            
+            setTimeout(() => {
+                playButton.style.transform = 'translate(-50%, -50%) scale(1)';
+                alert('Video functionality would be implemented here');
+            }, 200);
+        }
     });
 });
 
@@ -275,50 +279,54 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Add custom cursor effect
-document.addEventListener('mousemove', (e) => {
-    const cursor = document.querySelector('.custom-cursor');
-    if (!cursor) {
-        const newCursor = document.createElement('div');
-        newCursor.className = 'custom-cursor';
-        newCursor.style.cssText = `
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            background: rgba(255, 0, 0, 0.5);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            mix-blend-mode: difference;
-            transition: transform 0.1s ease;
-        `;
-        document.body.appendChild(newCursor);
-    }
-    
-    const cursorElement = document.querySelector('.custom-cursor');
-    cursorElement.style.left = e.clientX - 10 + 'px';
-    cursorElement.style.top = e.clientY - 10 + 'px';
-});
-
-// Enhanced hover effects for interactive elements
-const interactiveElements = document.querySelectorAll('a, button, .video-thumbnail, .album-card');
-interactiveElements.forEach(element => {
-    element.addEventListener('mouseenter', () => {
-        const cursor = document.querySelector('.custom-cursor');
-        if (cursor) {
-            cursor.style.transform = 'scale(1.5)';
-            cursor.style.background = 'rgba(255, 0, 0, 0.8)';
-        }
+// Email Copy Functionality
+function copyEmail(email, event) {
+    // Use the Clipboard API
+    navigator.clipboard.writeText(email).then(function() {
+        // Find the clicked element
+        const clickedElement = event.target.closest('.email-copy');
+        
+        // Add copied class for animation
+        clickedElement.classList.add('copied');
+        
+        // Add a slight pulse animation
+        clickedElement.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            clickedElement.style.transform = 'scale(1)';
+        }, 150);
+        
+        // Remove the class after animation completes
+        setTimeout(() => {
+            clickedElement.classList.remove('copied');
+        }, 3000);
+    }).catch(function(err) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = email;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        // Show copied feedback
+        const clickedElement = event.target.closest('.email-copy');
+        clickedElement.classList.add('copied');
+        
+        // Add a slight pulse animation
+        clickedElement.style.transform = 'scale(1.05)';
+        setTimeout(() => {
+            clickedElement.style.transform = 'scale(1)';
+        }, 150);
+        
+        setTimeout(() => {
+            clickedElement.classList.remove('copied');
+        }, 3000);
     });
     
-    element.addEventListener('mouseleave', () => {
-        const cursor = document.querySelector('.custom-cursor');
-        if (cursor) {
-            cursor.style.transform = 'scale(1)';
-            cursor.style.background = 'rgba(255, 0, 0, 0.5)';
-        }
-    });
-});
+    // Prevent default link behavior
+    event.preventDefault();
+    return false;
+}
 
 // Console easter egg
 console.log(`
