@@ -952,12 +952,12 @@ body {
 
 @media (max-width: 600px) {
     .nav {
-        padding: 1rem;
+        padding: 0.5rem 1rem;
     }
     
     .nav-brand .logo {
         height: 80px;
-        transform: translateY(8px);
+        transform: translateY(-5px);
     }
     
     .nav-menu {
@@ -1234,12 +1234,12 @@ body {
     }
     
     .nav {
-        padding: 0.8rem 1rem;
+        padding: 0.5rem 1rem;
     }
     
     .nav-brand .logo {
         height: 55px;
-        transform: translateY(6px);
+        transform: translateY(-8px);
     }
 
     .hero {
