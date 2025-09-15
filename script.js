@@ -47,36 +47,37 @@ document.addEventListener('DOMContentLoaded', () => {
     initParallaxEffect();
 });
 
-// Parallax Effect for Hero Background
+// Parallax Effect for Hero Background - DISABLED
 function initParallaxEffect() {
-    const heroImg = document.querySelector('.hero-bg-img');
-    
-    if (!heroImg) return;
-    
-    function updateParallax() {
-        const scrolled = window.pageYOffset;
-        const parallaxSpeed = 0.3; // Reduced speed for smoother effect
-        const yPos = -(scrolled * parallaxSpeed);
-        
-        heroImg.style.transform = `translate(-50%, calc(-50% + ${yPos}px)) scale(1.01)`;
-    }
-    
-    // Smooth scroll handling with better throttling
-    let ticking = false;
-    
-    function smoothScroll() {
-        updateParallax();
-        ticking = false;
-    }
-    
-    function handleScroll() {
-        if (!ticking) {
-            requestAnimationFrame(smoothScroll);
-            ticking = true;
-        }
-    }
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Parallax effect disabled to keep image static
+    // const heroImg = document.querySelector('.hero-bg-img');
+    // 
+    // if (!heroImg) return;
+    // 
+    // function updateParallax() {
+    //     const scrolled = window.pageYOffset;
+    //     const parallaxSpeed = 0.3; // Reduced speed for smoother effect
+    //     const yPos = -(scrolled * parallaxSpeed);
+    //     
+    //     heroImg.style.transform = `translate(-50%, calc(-50% + ${yPos}px)) scale(1.01)`;
+    // }
+    // 
+    // // Smooth scroll handling with better throttling
+    // let ticking = false;
+    // 
+    // function smoothScroll() {
+    //     updateParallax();
+    //     ticking = false;
+    // }
+    // 
+    // function handleScroll() {
+    //     if (!ticking) {
+    //         requestAnimationFrame(smoothScroll);
+    //         ticking = true;
+    //     }
+    // }
+    // 
+    // window.addEventListener('scroll', handleScroll, { passive: true });
 }
 
 // Mobile Navigation Toggle
