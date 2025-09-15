@@ -41,7 +41,43 @@ function initCountdown() {
 }
 
 // Initialize countdown when page loads
-document.addEventListener('DOMContentLoaded', initCountdown);
+document.addEventListener('DOMContentLoaded', () => {
+    initCountdown();
+    initNewsletterPopup();
+    initParallaxEffect();
+});
+
+// Parallax Effect for Hero Background
+function initParallaxEffect() {
+    const heroImg = document.querySelector('.hero-bg-img');
+    
+    if (!heroImg) return;
+    
+    function updateParallax() {
+        const scrolled = window.pageYOffset;
+        const parallaxSpeed = 0.3; // Reduced speed for smoother effect
+        const yPos = -(scrolled * parallaxSpeed);
+        
+        heroImg.style.transform = `translate(-50%, calc(-50% + ${yPos}px)) scale(1.01)`;
+    }
+    
+    // Smooth scroll handling with better throttling
+    let ticking = false;
+    
+    function smoothScroll() {
+        updateParallax();
+        ticking = false;
+    }
+    
+    function handleScroll() {
+        if (!ticking) {
+            requestAnimationFrame(smoothScroll);
+            ticking = true;
+        }
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+}
 
 // Mobile Navigation Toggle
 navToggle.addEventListener('click', () => {
@@ -328,6 +364,298 @@ function copyEmail(email, event) {
     return false;
 }
 
+// Newsletter Form Validation and Animation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('newsletterForm');
+    const nameInput = document.getElementById('subscriberName');
+    const emailInput = document.getElementById('subscriberEmail');
+    const submitBtn = document.getElementById('subscribeBtn');
+    const btnText = document.querySelector('.btn-text');
+    const btnLoading = document.querySelector('.btn-loading');
+    const btnSuccess = document.querySelector('.btn-success');
+    
+    // Rate limiting
+    let lastSubmitTime = 0;
+    const RATE_LIMIT_MS = 5000; // 5 seconds between submissions
+    
+    // Validation functions
+    function validateName(name) {
+        const nameRegex = /^[a-zA-ZÀ-ÿ\s]{2,50}$/;
+        return nameRegex.test(name.trim());
+    }
+    
+    function validateEmail(email) {
+        const emailRegex = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+        return emailRegex.test(email.trim());
+    }
+    
+    function isSpam() {
+        // Check honeypot
+        const honeypot = document.querySelector('input[name="website"]');
+        if (honeypot && honeypot.value !== '') {
+            return true;
+        }
+        
+        // Rate limiting
+        const now = Date.now();
+        if (now - lastSubmitTime < RATE_LIMIT_MS) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // Real-time validation
+    nameInput.addEventListener('input', function() {
+        const isValid = validateName(this.value);
+        this.classList.toggle('invalid', !isValid && this.value.length > 0);
+    });
+    
+    emailInput.addEventListener('input', function() {
+        const isValid = validateEmail(this.value);
+        this.classList.toggle('invalid', !isValid && this.value.length > 0);
+    });
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate inputs
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        
+        if (!validateName(name)) {
+            nameInput.focus();
+            showError('Please enter a valid name (2-50 characters, letters only)');
+            return;
+        }
+        
+        if (!validateEmail(email)) {
+            emailInput.focus();
+            showError('Please enter a valid email address');
+            return;
+        }
+        
+        if (isSpam()) {
+            showError('Please wait before submitting again');
+            return;
+        }
+        
+        // Update last submit time
+        lastSubmitTime = Date.now();
+        
+        // Show loading state
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'flex';
+        
+        // Submit to AWeber (using fetch for better control)
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            mode: 'no-cors' // AWeber doesn't support CORS
+        }).then(() => {
+            // Show success state
+            showSuccess();
+        }).catch(() => {
+            // Fallback to traditional form submission
+            form.submit();
+        });
+    });
+    
+    function showSuccess() {
+        submitBtn.classList.remove('loading');
+        submitBtn.classList.add('success');
+        btnLoading.style.display = 'none';
+        btnSuccess.style.display = 'flex';
+        
+        // Reset form
+        form.reset();
+        
+        // Reset button after 3 seconds
+        setTimeout(() => {
+            submitBtn.classList.remove('success');
+            submitBtn.disabled = false;
+            btnSuccess.style.display = 'none';
+            btnText.style.display = 'flex';
+        }, 3000);
+    }
+    
+    function showError(message) {
+        // Create or update error message
+        let errorEl = document.querySelector('.form-error');
+        if (!errorEl) {
+            errorEl = document.createElement('div');
+            errorEl.className = 'form-error';
+            form.appendChild(errorEl);
+        }
+        
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+        
+        // Hide error after 5 seconds
+        setTimeout(() => {
+            errorEl.style.display = 'none';
+        }, 5000);
+    }
+});
+
+// Newsletter Popup Functionality
+function initNewsletterPopup() {
+    const popup = document.getElementById('newsletterPopup');
+    const popupClose = document.getElementById('popupClose');
+    const popupForm = document.getElementById('popupForm');
+    const popupBtn = document.getElementById('popupSubscribeBtn');
+    const popupNameInput = document.getElementById('popupName');
+    const popupEmailInput = document.getElementById('popupEmail');
+    
+    // Check if popup was shown in this session
+    const popupShown = sessionStorage.getItem('newsletterPopupShown');
+    
+    // Show popup after 5 seconds if not shown in this session
+    if (!popupShown) {
+        setTimeout(() => {
+            popup.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }, 5000);
+    }
+    
+    // Close popup function
+    function closePopup() {
+        popup.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        sessionStorage.setItem('newsletterPopupShown', 'true');
+    }
+    
+    // Close popup on close button click
+    popupClose.addEventListener('click', closePopup);
+    
+    // Close popup on outside click
+    popup.addEventListener('click', (e) => {
+        if (e.target === popup) {
+            closePopup();
+        }
+    });
+    
+    // Close popup on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && popup.classList.contains('active')) {
+            closePopup();
+        }
+    });
+    
+    // Form validation functions (reuse from main form)
+    function validatePopupName(name) {
+        const namePattern = /^[a-zA-ZÀ-ÿ\s]{2,50}$/;
+        return namePattern.test(name.trim());
+    }
+    
+    function validatePopupEmail(email) {
+        const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+        return emailPattern.test(email.trim());
+    }
+    
+    // Real-time validation for popup form
+    popupNameInput.addEventListener('input', function() {
+        const isValid = validatePopupName(this.value);
+        this.style.borderColor = isValid ? '#333' : '#ff4444';
+    });
+    
+    popupEmailInput.addEventListener('input', function() {
+        const isValid = validatePopupEmail(this.value);
+        this.style.borderColor = isValid ? '#333' : '#ff4444';
+    });
+    
+    // Handle popup form submission
+    popupForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const name = popupNameInput.value.trim();
+        const email = popupEmailInput.value.trim();
+        
+        // Validate inputs
+        if (!validatePopupName(name)) {
+            popupNameInput.style.borderColor = '#ff4444';
+            popupNameInput.focus();
+            return;
+        }
+        
+        if (!validatePopupEmail(email)) {
+            popupEmailInput.style.borderColor = '#ff4444';
+            popupEmailInput.focus();
+            return;
+        }
+        
+        // Check for spam (honeypot and rate limiting)
+        const honeypot = popupForm.querySelector('input[name="website"]');
+        if (honeypot.value) {
+            return; // Silent fail for bots
+        }
+        
+        // Rate limiting
+        const lastSubmission = localStorage.getItem('lastPopupSubmission');
+        const now = Date.now();
+        if (lastSubmission && now - parseInt(lastSubmission) < 5000) {
+            return; // Silent fail for rapid submissions
+        }
+        
+        // Show loading state
+        popupBtn.classList.add('loading');
+        popupBtn.querySelector('.btn-text').style.display = 'none';
+        popupBtn.querySelector('.btn-loading').style.display = 'flex';
+        popupBtn.disabled = true;
+        
+        // Submit to AWeber
+        const formData = new FormData(popupForm);
+        
+        fetch('https://www.aweber.com/scripts/addlead.pl', {
+            method: 'POST',
+            body: formData,
+            mode: 'no-cors'
+        }).then(() => {
+            // Store submission time
+            localStorage.setItem('lastPopupSubmission', now.toString());
+            
+            // Show success state
+            popupBtn.classList.remove('loading');
+            popupBtn.querySelector('.btn-loading').style.display = 'none';
+            popupBtn.querySelector('.btn-success').style.display = 'flex';
+            
+            // Close popup after 2 seconds
+            setTimeout(() => {
+                closePopup();
+                
+                // Reset form after closing
+                setTimeout(() => {
+                    popupForm.reset();
+                    popupBtn.classList.remove('loading');
+                    popupBtn.querySelector('.btn-success').style.display = 'none';
+                    popupBtn.querySelector('.btn-text').style.display = 'flex';
+                    popupBtn.disabled = false;
+                    popupNameInput.style.borderColor = '#333';
+                    popupEmailInput.style.borderColor = '#333';
+                }, 500);
+            }, 2000);
+            
+        }).catch(() => {
+            // Handle error
+            popupBtn.classList.remove('loading');
+            popupBtn.querySelector('.btn-loading').style.display = 'none';
+            popupBtn.querySelector('.btn-text').style.display = 'flex';
+            popupBtn.disabled = false;
+            
+            // Show error styling
+            popupBtn.style.background = '#ff4444';
+            setTimeout(() => {
+                popupBtn.style.background = '';
+            }, 3000);
+        });
+    });
+}
+
 // Console easter egg
 console.log(`
     ██████╗ ██╗   ██╗██╗     ██╗      ██████╗ ██╗    ██╗
@@ -338,5 +666,4 @@ console.log(`
      ╚═════╝   ╚═══╝  ╚══════╝╚══════╝ ╚═════╝  ╚══╝╚══╝ 
      
     Welcome to GVLLOW's official website!
-    Built with passion and code.
 `);
