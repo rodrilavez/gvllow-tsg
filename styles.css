@@ -1046,10 +1046,14 @@ body {
         padding: 0 30px;
     }
     
-    .albums-grid,
-    .videos-grid {
+    .albums-grid {
         grid-template-columns: repeat(4, 1fr);
         gap: 1.2rem;
+    }
+    
+    .videos-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
     }
     
     .merch-content,
@@ -1067,6 +1071,16 @@ body {
 }
 
 @media (max-width: 768px) {
+    .albums-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.2rem;
+    }
+    
+    .videos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
     .contact-info {
         flex-direction: column;
         gap: 2rem;
@@ -1705,12 +1719,6 @@ body {
     
     .footer-logo {
         height: 40px;
-    }
-    
-    .albums-grid,
-    .videos-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
     }
 }
 
